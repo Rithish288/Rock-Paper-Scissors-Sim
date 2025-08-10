@@ -1,5 +1,18 @@
 {
   "devDependencies": {
+    "copyfiles": "^2.4.1",
     "typescript": "^5.9.2"
-  }
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc --project tsconfig.prod.json && npm run copy",
+    "copy": "copyfiles -u 1 src/**/*.html dist"
+  },
+  "name": "rock-paper-scissors-sim",
+  "description": "Simulation of an army of rocks, papers, and scissors fighting each other for the monopoly",
+  "version": "1.0.0",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
