@@ -1,12 +1,17 @@
 {
   "devDependencies": {
+    "chokidar-cli": "^3.0.0",
+    "concurrently": "^9.2.0",
     "copyfiles": "^2.4.1",
     "typescript": "^5.9.2"
   },
   "scripts": {
-    "dev": "tsc --watch",
+    "dev": "concurrently \"npm run tsc:watch\" \"npm run copy:watch\" \"npm run serve\"",
     "build": "tsc --project tsconfig.prod.json && npm run copy",
-    "copy": "copyfiles -u 1 src/**/*.html dist"
+    "copy": "copyfiles -u 0 assets/**/* dist && copyfiles -u 1 src/**/*.{html,css} dist",
+    "copy:watch": "chokidar \"src/**/*.{html,css}\" \"assets/**/*\" -c \"npm run copy\" --initial",
+    "tsc:watch": "tsc --watch",
+    "serve": "live-server dist --quiet"
   },
   "name": "rock-paper-scissors-sim",
   "description": "Simulation of an army of rocks, papers, and scissors fighting each other for the monopoly",
@@ -14,5 +19,6 @@
   "main": "index.js",
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "type": "module"
 }
