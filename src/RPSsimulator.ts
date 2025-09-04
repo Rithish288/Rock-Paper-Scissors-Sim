@@ -1,4 +1,4 @@
-import { Gesture, Paper, Rock, Scissor } from "./gesture.js";
+import { Gesture, type gesTypes } from "./gesture.js";
 
 export class RPSsimulator {
     private readonly gestureArr: Gesture[] = [];
@@ -9,7 +9,8 @@ export class RPSsimulator {
             rock: HTMLImageElement;
             paper: HTMLImageElement;
             scissor: HTMLImageElement;
-        }
+        },
+        private imageDim: number
     ) {}
 
     public placeGestures() {
@@ -21,8 +22,7 @@ export class RPSsimulator {
 
     public animate() {
         this.c.clearRect(0, 0, this.c.canvas.width, this.c.canvas.height);
-        //Collisions are turned off temporarily due to sprite jitter
-        // this.handleCollissions();
+        this.handleCollissions();
         for (const gesture of this.gestureArr) {
             gesture.move(this.c);
         }
@@ -31,46 +31,43 @@ export class RPSsimulator {
     }
 
     private createGesture(
-        type: typeof Rock | typeof Paper | typeof Scissor
+        type: gesTypes
     ): Gesture {
         const image = this.imageMapper(type);
-        return new type(
-            Math.random() * (this.c.canvas.width - image.width),
-            Math.random() * (this.c.canvas.height - image.height),
-            image
+        return new Gesture(
+            Math.random() * (this.c.canvas.width - this.imageDim*image.width/image.height),
+            Math.random() * (this.c.canvas.height - this.imageDim),
+            image,
+            30,
+            type
         );
     }
 
+    // Called in animate(), but commented off due to sprite jitter
     private handleCollissions() {
         for(let i = 0; i < this.gestureArr.length; ++i) {
             for(let j = i+1; j < this.gestureArr.length; ++j) {
                 const g1 = this.gestureArr[i] as Gesture;
                 const g2 = this.gestureArr[j] as Gesture;
                 if(!g1.checkCollision(g2)) continue;
-
-                const dx = (g1.getCoords().x + g1.getWidth()/2) - (g2.getCoords().x + g2.getWidth()/2);
-                const dy = (g1.getCoords().y + g1.getHeight()/2) - (g2.getCoords().y + g2.getHeight()/2);
-                
-                if(Math.abs(dx) > Math.abs(dy)) {
-                    this.gestureArr[i]?.reverseX();
-                    this.gestureArr[j]?.reverseX();
-                } else {
-                    this.gestureArr[i]?.reverseY();
-                    this.gestureArr[j]?.reverseY();
+                if(g1.beats(g2)) {
+                    g2.surrender(g1);
+                } else if(g2.beats(g1)) {
+                    g1.surrender(g2);
                 }
             }
         }
     }
 
     private imageMapper(
-        gesture: typeof Rock | typeof Paper | typeof Scissor
+        type: gesTypes
     ): HTMLImageElement {
-        switch (gesture) {
-            case Rock:
+        switch (type) {
+            case "rock":
                 return this.images.rock;
-            case Paper:
+            case "paper":
                 return this.images.paper;
-            case Scissor:
+            case "scissor":
                 return this.images.scissor;
             default:
                 return this.images.rock;
@@ -80,16 +77,14 @@ export class RPSsimulator {
     private addRandomGesture(): boolean {
         let placed = false;
         let iterations = 0;
-        const choices = [Rock, Paper, Scissor];
+        const choices = ["rock", "paper", "scissor"];
         while (!placed) {
-            // Pick and make an instance of a random gesture
-            const choice = choices[
-                Math.floor(Math.random() * choices.length)
-            ] as typeof Rock | typeof Paper | typeof Scissor;
+            // Pick and make an instance of a random gesture'
+            const choice = choices[Math.floor(Math.random() * choices.length)] as gesTypes;
             const newGesture = this.createGesture(choice);
 
             // Check if the random gesture overlaps with any other existing gestures
-            const overlap = this.gestureArr.some((gesture) =>
+            const overlap = this.gestureArr.some(gesture => 
                 newGesture.checkCollision(gesture)
             );
             if (!overlap) {

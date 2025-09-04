@@ -1,40 +1,65 @@
-export abstract class Gesture {
-    private dx = this.randomDirection() * 2;
-    private dy = this.randomDirection() * 1.5;
-    public abstract readonly type: typeof Rock | typeof Paper | typeof Scissor;
+export type gesTypes = "rock" | "paper" | "scissor";
+
+export class Gesture {
+    private vel = new Vector(this.randomDirection()*2, this.randomDirection()*1.5);
+    private height: number;
+    private width: number;
     constructor(
         private x: number,
         private y: number,
-        private image: HTMLImageElement
-    ) {}
+        private image: HTMLImageElement,
+        private size: number,
+        private type: gesTypes
+    ) {
+        this.height = this.size;
+        this.width = this.size * image.width / image.height; // size adjusted for aspect ratio
+    }
 
-    public abstract beats(gesture: Gesture): boolean;
+    public beats(gesture: Gesture): boolean {
+        switch (this.type) {
+            case "rock":
+                return gesture.type === "scissor";
+            case "paper":
+                return gesture.type === "rock";
+            case "scissor":
+                return gesture.type === "paper";
+        }
+        return false;
+    };
 
     public drawGesture(x: number, y: number, c: CanvasRenderingContext2D) {
-        c.drawImage(this.image, x, y, this.image.width, this.image.height);
+        c.drawImage(this.image, x, y, this.width, this.height);
     }
 
     public move(c: CanvasRenderingContext2D) {
-        if (this.x + this.image.width > c.canvas!.width || this.x <= 0) {
-            this.dx *= -1;
+        if (this.x + this.width > c.canvas!.width || this.x <= 0) {
+            this.vel.flipX();
         }
 
-        if (this.y + this.image.height > c.canvas!.height || this.y <= 0) {
-            this.dy *= -1;
+        if (this.y + this.height > c.canvas!.height || this.y <= 0) {
+            this.vel.flipY();
         }
-        this.x += this.dx;
-        this.y += this.dy;
+        this.x += this.vel.x;
+        this.y += this.vel.y;
         this.drawGesture(this.x, this.y, c);
     }
 
     public checkCollision(gesture: Gesture) {
         const isColliding =
-            this.x < gesture.x + this.image.width && // Check if this gesture's left side is to the left of the other gesture's right side
-            this.x + this.image.width > gesture.x && // Check if this gesture's right side is to the right of the other gesture's left side
-            this.y < gesture.y + this.image.height && // Check if this gesture's top side is above the other gesture's bottom side
-            this.y + this.image.height > gesture.y; // Check if this gesture's bottom side is below the other gesture's top side
+            this.x < gesture.x + this.width && // Check if this gesture's left side is to the left of the other gesture's right side
+            this.x + this.width > gesture.x && // Check if this gesture's right side is to the right of the other gesture's left side
+            this.y < gesture.y + this.height && // Check if this gesture's top side is above the other gesture's bottom side
+            this.y + this.height > gesture.y; // Check if this gesture's bottom side is below the other gesture's top side
 
         return isColliding;
+    }
+
+    public surrender(gesture: Gesture) {
+        this.image = gesture.image;
+        this.type = gesture.type;
+        this.size = gesture.size;
+        this.height = gesture.height;
+        this.width = gesture.width;
     }
 
     public getCoords() {
@@ -42,24 +67,11 @@ export abstract class Gesture {
     }
 
     public getWidth() {
-        return this.image.width;
+        return this.width;
     }
 
     public getHeight() {
-        return this.image.height;
-    }
-
-    public reverseX() {
-        this.changeDirection(-this.dx, this.dy);
-    }
-
-    public reverseY() {
-        this.changeDirection(this.dx, -this.dy);
-    }
-
-    private changeDirection(dx: number, dy: number) {
-        this.dx = dx;
-        this.dy = dy;
+        return this.height;
     }
 
     private randomDirection() {
@@ -68,23 +80,17 @@ export abstract class Gesture {
     }
 }
 
-export class Rock extends Gesture {
-    public readonly type = Rock;
-    public beats(gesture: Gesture): boolean {
-        return gesture instanceof Scissor;
-    }
-}
+class Vector {
+    constructor(
+        public x: number,
+        public y: number
+    ) {}
 
-export class Paper extends Gesture {
-    public readonly type = Paper;
-    beats(gesture: Gesture): boolean {
-        return gesture instanceof Rock;
+    public flipX(): void {
+        this.x *= -1;
     }
-}
 
-export class Scissor extends Gesture {
-    public readonly type = Scissor;
-    beats(gesture: Gesture): boolean {
-        return gesture instanceof Paper;
+    public flipY(): void {
+        this.y *= -1;
     }
 }

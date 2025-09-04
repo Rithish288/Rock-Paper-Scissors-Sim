@@ -30,13 +30,21 @@ if(canvas != null) {
 	let loadedCount = 0;
 	const numGestures = 30;
 
-	function checkAllLoaded() {
+	function checkAllLoaded(): void {
 		loadedCount++;
 		if (loadedCount == 3) {
-			const rps = new RPSsimulator(c, numGestures, {rock: rockImg, paper: paperImg, scissor: scissorImg});
-			rps.placeGestures();
-			rps.animate();
+			simulate();
 		};
+	}
+
+	function simulate(): void {
+		const rps = new RPSsimulator(c, numGestures, {
+            rock: rockImg,
+            paper: paperImg,
+            scissor: scissorImg,
+        }, imageDim);
+        rps.placeGestures();
+        rps.animate();
 	}
 
 	rockImg.onload = checkAllLoaded;
