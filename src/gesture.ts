@@ -1,7 +1,7 @@
 export type gesTypes = "rock" | "paper" | "scissor";
 
 export class Gesture {
-    private vel = new Vector(this.randomDirection()*2, this.randomDirection()*1.5);
+    private vel = new Vector(this.randomDirection()*1.5, this.randomDirection());
     private height: number;
     private width: number;
     constructor(
@@ -24,7 +24,6 @@ export class Gesture {
             case "scissor":
                 return gesture.type === "paper";
         }
-        return false;
     };
 
     public drawGesture(x: number, y: number, c: CanvasRenderingContext2D) {
@@ -32,11 +31,11 @@ export class Gesture {
     }
 
     public move(c: CanvasRenderingContext2D) {
-        if (this.x + this.width > c.canvas!.width || this.x <= 0) {
+        if (this.x + this.width > c.canvas.width || this.x <= 0) {
             this.vel.flipX();
         }
 
-        if (this.y + this.height > c.canvas!.height || this.y <= 0) {
+        if (this.y + this.height > c.canvas.height || this.y <= 0) {
             this.vel.flipY();
         }
         this.x += this.vel.x;
@@ -62,16 +61,16 @@ export class Gesture {
         this.width = gesture.width;
     }
 
-    public getCoords() {
-        return {x: this.x, y: this.y};
-    }
-
     public getWidth() {
         return this.width;
     }
 
     public getHeight() {
         return this.height;
+    }
+
+    public getType() {
+        return this.type;
     }
 
     private randomDirection() {

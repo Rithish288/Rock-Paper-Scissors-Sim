@@ -1,7 +1,13 @@
 import { Gesture, type gesTypes } from "./gesture.js";
+import { EventEmitter } from "./EventEmitter.js";
 
 export class RPSsimulator {
-    private readonly gestureArr: Gesture[] = [];
+    private gestureArr: Gesture[] = [];
+    private spriteCount: Record<gesTypes, number> = {
+        rock: 0,
+        paper: 0,
+        scissor: 0
+    };
     constructor(
         private c: CanvasRenderingContext2D,
         private numGestures: number,
@@ -12,24 +18,33 @@ export class RPSsimulator {
         },
         private imageDim: number
     ) {}
-
+    
     public placeGestures() {
         for (let i = 0; i < this.numGestures; ++i) {
             this.addRandomGesture();
         }
         Object.seal(this.gestureArr);
+        return this.spriteCount
     }
-
+    
     public animate() {
         this.c.clearRect(0, 0, this.c.canvas.width, this.c.canvas.height);
         this.handleCollissions();
         for (const gesture of this.gestureArr) {
             gesture.move(this.c);
         }
-
+        
         requestAnimationFrame(this.animate.bind(this));
     }
 
+    public onCountCHange = new EventEmitter<Record<gesTypes, number>>();
+
+    private updateSpriteCounts(winner: Gesture, loser: Gesture) {
+        this.spriteCount[winner.getType()]++;
+        this.spriteCount[loser.getType()]--;
+        this.onCountCHange.emit(this.spriteCount);
+    }
+    
     private createGesture(
         type: gesTypes
     ): Gesture {
@@ -42,7 +57,7 @@ export class RPSsimulator {
             type
         );
     }
-
+    
     // Called in animate(), but commented off due to sprite jitter
     private handleCollissions() {
         for(let i = 0; i < this.gestureArr.length; ++i) {
@@ -51,17 +66,17 @@ export class RPSsimulator {
                 const g2 = this.gestureArr[j] as Gesture;
                 if(!g1.checkCollision(g2)) continue;
                 if(g1.beats(g2)) {
+                    this.updateSpriteCounts(g1, g2);
                     g2.surrender(g1);
                 } else if(g2.beats(g1)) {
+                    this.updateSpriteCounts(g2, g1);
                     g1.surrender(g2);
                 }
             }
         }
     }
 
-    private imageMapper(
-        type: gesTypes
-    ): HTMLImageElement {
+    private imageMapper(type: gesTypes) {
         switch (type) {
             case "rock":
                 return this.images.rock;
@@ -77,7 +92,7 @@ export class RPSsimulator {
     private addRandomGesture(): boolean {
         let placed = false;
         let iterations = 0;
-        const choices = ["rock", "paper", "scissor"];
+        const choices = Object.keys(this.spriteCount);
         while (!placed) {
             // Pick and make an instance of a random gesture'
             const choice = choices[Math.floor(Math.random() * choices.length)] as gesTypes;
@@ -89,6 +104,8 @@ export class RPSsimulator {
             );
             if (!overlap) {
                 this.gestureArr.push(newGesture);
+                this.spriteCount[choice]++;
+
                 placed = true;
             }
 
