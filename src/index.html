@@ -9,19 +9,27 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <canvas></canvas>
-    <div id="status">
-        <p><img src="./assets/rock.svg" height="30" alt="rock"> <span id="rock-count">0</span></p>
-        <p><img src="./assets/paper.svg" height="30" alt="paper"> <span id="paper-count">0</span></p>
-        <p><img src="./assets/scissor.svg" height="30" alt="scissor"> <span id="scissor-count">0</span></p>
-    <!-- </div>
-        <div class="restart">
-        <div class="content">
-            <h2></h2>
-            <p>Do you want to restart the game?</p>
-        </div>
-        <button id="restart">Restart</button>
-        <button id="cancel">Cancel</button>
-    </div> -->
+    <main>
+        <section>
+            <canvas></canvas>
+        </section>
+        <aside>
+            <button id="startBtn">Start</button>
+            <div id="status">
+                <p><img src="./assets/rock.svg" height="30" alt="rock"> <span id="rock-count">0</span></p>
+                <p><img src="./assets/paper.svg" height="30" alt="paper"> <span id="paper-count">0</span></p>
+                <p><img src="./assets/scissor.svg" height="30" alt="scissor"> <span id="scissor-count">0</span></p>
+            </div>
+            <div class="restart">
+                <div class="content">
+                    <h2 id="win-text"></h2>
+                    <p>Do you want to restart the game?</p>
+                </div>
+                <button id="restart">Restart</button>
+                <button id="cancel">Cancel</button>
+            </div>
+        </aside>
+    </main>
+
 </body>
 </html>

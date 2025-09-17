@@ -3,6 +3,11 @@ import { EventEmitter } from "./EventEmitter.js";
 
 export class RPSsimulator {
     private gestureArr: Gesture[] = [];
+    private previousCounts: Record<gesTypes, number> = {
+        rock: 0,
+        paper: 0,
+        scissor: 0
+    };
     private spriteCount: Record<gesTypes, number> = {
         rock: 0,
         paper: 0,
@@ -24,25 +29,35 @@ export class RPSsimulator {
             this.addRandomGesture();
         }
         Object.seal(this.gestureArr);
-        return this.spriteCount
     }
     
     public animate() {
         this.c.clearRect(0, 0, this.c.canvas.width, this.c.canvas.height);
-        this.handleCollissions();
         for (const gesture of this.gestureArr) {
             gesture.move(this.c);
         }
         
+        this.handleCollissions();
         requestAnimationFrame(this.animate.bind(this));
     }
 
-    public onCountCHange = new EventEmitter<Record<gesTypes, number>>();
+    public onCountCHange = new EventEmitter<{
+        prev: Record<gesTypes, number>,
+        next: Record<gesTypes, number>
+    }>();
 
     private updateSpriteCounts(winner: Gesture, loser: Gesture) {
         this.spriteCount[winner.getType()]++;
         this.spriteCount[loser.getType()]--;
-        this.onCountCHange.emit(this.spriteCount);
+        this.emitCountChange();
+    }
+
+    private emitCountChange() {
+        this.onCountCHange.emit({
+            prev: this.previousCounts,
+            next: this.spriteCount
+        });
+        this.previousCounts = { ...this.spriteCount };
     }
     
     private createGesture(

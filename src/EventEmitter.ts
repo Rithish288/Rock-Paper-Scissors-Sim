@@ -1,4 +1,4 @@
-type Listener<T> = (event: T) => void;
+export type Listener<T> = (event: T) => void;
 
 export class EventEmitter<T> {
     private listeners: Listener<T>[] = [];

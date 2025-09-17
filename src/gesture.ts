@@ -44,13 +44,12 @@ export class Gesture {
     }
 
     public checkCollision(gesture: Gesture) {
-        const isColliding =
+        return (
             this.x < gesture.x + this.width && // Check if this gesture's left side is to the left of the other gesture's right side
             this.x + this.width > gesture.x && // Check if this gesture's right side is to the right of the other gesture's left side
             this.y < gesture.y + this.height && // Check if this gesture's top side is above the other gesture's bottom side
-            this.y + this.height > gesture.y; // Check if this gesture's bottom side is below the other gesture's top side
-
-        return isColliding;
+            this.y + this.height > gesture.y // Check if this gesture's bottom side is below the other gesture's top side
+        );
     }
 
     public surrender(gesture: Gesture) {
@@ -61,18 +60,14 @@ export class Gesture {
         this.width = gesture.width;
     }
 
-    public getWidth() {
-        return this.width;
-    }
-
-    public getHeight() {
-        return this.height;
-    }
-
     public getType() {
         return this.type;
     }
 
+    /**
+     * 
+     * @returns A random number in the range [-1, -0.5] U [0.5, 1]
+     */
     private randomDirection() {
         const sign = Math.random() < 0.5 ? -1 : 1;
         return sign * (Math.random() * 0.5 + 0.5);
